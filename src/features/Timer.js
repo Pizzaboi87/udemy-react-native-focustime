@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useKeepAwake } from 'expo-keep-awake';
 import { View, Text, StyleSheet, Vibration } from 'react-native';
 import { ProgressBar } from 'react-native-paper';
 import { Countdown } from '../components/Countdown';
@@ -15,16 +16,43 @@ const PATTERN = [
   3 * ONE_SECOND_IN_MS,
 ];
 
-export const Timer = ({ focusSubject, setFocusSubject }) => {
+export const Timer = ({ focusSubject, setFocusSubject, setHistory }) => {
+  useKeepAwake();
   const [isStarted, setIsStarted] = useState(false);
   const [progress, setProgress] = useState(1);
-  const [minutes, setMinutes] = useState(10);
+  const [minutes, setMinutes] = useState(0.1);
   const [isVibrate, setIsVibrate] = useState(false);
+  const [resetInPause, setResetInPause] = useState(false);
 
   const setDetails = (time, prog, start) => {
     setMinutes(time);
     setProgress(prog);
     setIsStarted(start);
+  };
+
+  const deleteLastSubject = () => {
+    setHistory((prevHistory) => {
+      return [...prevHistory].filter((item) => item !== focusSubject);
+    });
+    setFocusSubject('');
+  };
+
+  const turnOffVibrate = () => {
+    Vibration.cancel();
+    setIsVibrate(false);
+  };
+
+  const vibrationStart = () => {
+    Vibration.vibrate(PATTERN, true);
+    setIsVibrate(true);
+  };
+
+  const vibrationEnd = () => {
+    turnOffVibrate();
+    setHistory((prevHistory) => {
+      return [...prevHistory, focusSubject];
+    });
+    setDetails(10, 1, false);
   };
 
   const startPause = () => {
@@ -33,20 +61,29 @@ export const Timer = ({ focusSubject, setFocusSubject }) => {
     } else setDetails(10, 1, true);
   };
 
-  const vibrationOn = () => {
-    Vibration.vibrate(PATTERN, true);
-    setIsVibrate(true);
+  const back = () => {
+    if (isVibrate) {
+      turnOffVibrate();
+      setFocusSubject('');
+    } else setFocusSubject('');
   };
 
-  const vibrationOff = () => {
-    Vibration.cancel();
-    setIsVibrate(false);
-    setDetails(10, 1, false);
+  const reset = () => {
+    if (isVibrate) {
+      turnOffVibrate();
+      setDetails(10, 1, false);
+    } else {
+      setDetails(10, 1, false);
+      setResetInPause(true);
+    }
   };
 
-  const reset = () => setDetails(0, 0, false);
-
-  const giveUp = () => setFocusSubject('');
+  const giveUp = () => {
+    if (isVibrate) {
+      turnOffVibrate();
+      deleteLastSubject();
+    } else deleteLastSubject();
+  };
 
   return (
     <View style={styles.container}>
@@ -55,7 +92,8 @@ export const Timer = ({ focusSubject, setFocusSubject }) => {
           minutes={minutes}
           isPaused={!isStarted}
           onProgress={setProgress}
-          onEnd={vibrationOn}
+          onEnd={vibrationStart}
+          resetInPause={resetInPause}
         />
         <Text style={styles.title}>Focusing on:</Text>
         <Text style={styles.task}>{focusSubject}</Text>
@@ -69,15 +107,16 @@ export const Timer = ({ focusSubject, setFocusSubject }) => {
       </View>
       <View style={styles.buttonWrapper}>
         <RoundedButton
-          title={isVibrate ? 'stop' : isStarted ? 'pause' : 'start'}
-          onPress={isVibrate ? vibrationOff : startPause}
+          title={isVibrate ? 'done' : isStarted ? 'pause' : 'start'}
+          onPress={isVibrate ? vibrationEnd : startPause}
         />
       </View>
       <View style={styles.timingButtonWrapper}>
         <TimingButton onChangeTime={setMinutes} />
       </View>
       <View style={styles.escape}>
-        <RoundedButton size={75} title="end" onPress={reset} />
+        <RoundedButton size={75} title="back" onPress={back} />
+        <RoundedButton size={75} title="reset" onPress={reset} />
         <RoundedButton size={75} title="giveUp" onPress={giveUp} />
       </View>
     </View>
