@@ -7,6 +7,10 @@ import { RoundedButton } from '../components/RoundedButton';
 export const FocusHistory = ({ history, setHistory }) => {
   const resetList = () => setHistory([]);
 
+  const deleteItem = (index) => {
+    setHistory(history.filter((item) => history.indexOf(item) !== index));
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.text}>You have focused on:</Text>
@@ -14,9 +18,16 @@ export const FocusHistory = ({ history, setHistory }) => {
         style={styles.listContainer}
         data={history}
         renderItem={({ item, index }) => (
-          <Text style={styles.list}>
-            {index + 1} - {item}
-          </Text>
+          <View style={styles.listItemLine}>
+            <Text style={styles.listItem}>
+              {index + 1} - {item}
+            </Text>
+            <RoundedButton
+              title="-"
+              size={40}
+              onPress={() => deleteItem(index)}
+            />
+          </View>
         )}
       />
       <RoundedButton
@@ -49,8 +60,15 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     alignSelf: 'flex-start',
   },
-  list: {
+  listItemLine: {
+    flexDirection: 'row',
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  listItem: {
     color: colors.white,
     fontSize: fontSizes.lg,
+    marginRight: 10,
   },
 });
