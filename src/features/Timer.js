@@ -1,38 +1,84 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Vibration } from 'react-native';
 import { ProgressBar } from 'react-native-paper';
 import { Countdown } from '../components/Countdown';
+import { TimingButton } from './TimingButton';
 import { RoundedButton } from '../components/RoundedButton';
 import { spacing, fontSizes } from '../utils/sizes';
 import { colors } from '../utils/colors';
 
-export const Timer = ({ focusSubject }) => {
+const ONE_SECOND_IN_MS = 1000;
+
+const PATTERN = [
+  1 * ONE_SECOND_IN_MS,
+  2 * ONE_SECOND_IN_MS,
+  3 * ONE_SECOND_IN_MS,
+];
+
+export const Timer = ({ focusSubject, setFocusSubject }) => {
   const [isStarted, setIsStarted] = useState(false);
   const [progress, setProgress] = useState(1);
+  const [minutes, setMinutes] = useState(10);
+  const [isVibrate, setIsVibrate] = useState(false);
 
-  const startPause = () => setIsStarted((prevState) => !prevState);
+  const setDetails = (time, prog, start) => {
+    setMinutes(time);
+    setProgress(prog);
+    setIsStarted(start);
+  };
+
+  const startPause = () => {
+    if (minutes !== 0) {
+      setIsStarted((prevState) => !prevState);
+    } else setDetails(10, 1, true);
+  };
+
+  const vibrationOn = () => {
+    Vibration.vibrate(PATTERN, true);
+    setIsVibrate(true);
+  };
+
+  const vibrationOff = () => {
+    Vibration.cancel();
+    setIsVibrate(false);
+    setDetails(10, 1, false);
+  };
+
+  const reset = () => setDetails(0, 0, false);
+
+  const giveUp = () => setFocusSubject('');
 
   return (
     <View style={styles.container}>
       <View style={styles.countdown}>
         <Countdown
+          minutes={minutes}
           isPaused={!isStarted}
-          onProgress={(progress) => setProgress(progress)}
-          onEnd={() => {}}
+          onProgress={setProgress}
+          onEnd={vibrationOn}
         />
         <Text style={styles.title}>Focusing on:</Text>
         <Text style={styles.task}>{focusSubject}</Text>
       </View>
-      <ProgressBar 
-        progress={progress} 
-        style={styles.progressBar}
-        color={(progress < 0.4) ? colors.progressEnd : colors.progressBar} 
-      />
+      <View style={{ paddingTop: spacing.lg }}>
+        <ProgressBar
+          progress={progress}
+          style={styles.progressBar}
+          color={progress < 0.2 ? colors.progressEnd : colors.progressBar}
+        />
+      </View>
       <View style={styles.buttonWrapper}>
         <RoundedButton
-          title={isStarted ? 'pause' : 'start'}
-          onPress={startPause}
+          title={isVibrate ? 'stop' : isStarted ? 'pause' : 'start'}
+          onPress={isVibrate ? vibrationOff : startPause}
         />
+      </View>
+      <View style={styles.timingButtonWrapper}>
+        <TimingButton onChangeTime={setMinutes} />
+      </View>
+      <View style={styles.escape}>
+        <RoundedButton size={75} title="end" onPress={reset} />
+        <RoundedButton size={75} title="giveUp" onPress={giveUp} />
       </View>
     </View>
   );
@@ -43,7 +89,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   countdown: {
-    flex: 0.5,
+    flex: 0.4,
     marginTop: spacing.xxl,
     alignItems: 'center',
     justifyContent: 'center',
@@ -55,8 +101,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  timingButtonWrapper: {
+    flex: 0.4,
+    flexDirection: 'row',
+    padding: spacing.md,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   title: {
-    marginTop: spacing.lg,
+    marginTop: spacing.sm,
     color: colors.white,
     fontSize: fontSizes.lg,
   },
@@ -67,6 +120,14 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     backgroundColor: 'transparent',
-    height: spacing.sm
-  }
+    height: spacing.sm,
+    marginTop: spacing.md,
+  },
+  escape: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingRight: spacing.sm,
+    paddingLeft: spacing.sm,
+    paddingBottom: spacing.md,
+  },
 });
