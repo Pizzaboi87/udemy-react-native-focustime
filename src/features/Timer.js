@@ -20,7 +20,7 @@ export const Timer = ({ focusSubject, setFocusSubject, setHistory }) => {
   useKeepAwake();
   const [isStarted, setIsStarted] = useState(false);
   const [progress, setProgress] = useState(1);
-  const [minutes, setMinutes] = useState(0.1);
+  const [minutes, setMinutes] = useState(10);
   const [isVibrate, setIsVibrate] = useState(false);
   const [resetInPause, setResetInPause] = useState(false);
 
