@@ -6,14 +6,20 @@ import { colors } from '../utils/colors';
 const minutesToMillis = (min) => min * 1000 * 60;
 const formatTime = (time) => (time < 10 ? `0${time}` : time);
 
-export const Countdown = ({ minutes = 0.1, isPaused, onProgress, onEnd, resetInPause }) => {
+export const Countdown = ({
+  minutes = 0.1,
+  isPaused,
+  onProgress,
+  onEnd,
+  resetInPause,
+}) => {
   const interval = React.useRef(null);
 
   const [millis, setMillis] = useState(null);
 
   const resetWhilePause = () => {
-    if(resetInPause) setMillis(minutesToMillis(minutes));
-  }
+    if (resetInPause) setMillis(minutesToMillis(minutes));
+  };
 
   const countDown = () => {
     setMillis((time) => {
@@ -37,11 +43,11 @@ export const Countdown = ({ minutes = 0.1, isPaused, onProgress, onEnd, resetInP
 
   useEffect(() => {
     if (isPaused) {
-      resetWhilePause()
+      resetWhilePause();
       if (interval.current) {
-        clearInterval(interval.current)
-        resetWhilePause()
-      };
+        clearInterval(interval.current);
+        resetWhilePause();
+      }
       return;
     }
 
@@ -54,21 +60,27 @@ export const Countdown = ({ minutes = 0.1, isPaused, onProgress, onEnd, resetInP
   const seconds = Math.floor(millis / 1000) % 60;
 
   return (
-    <Text style={styles.text}>
-      {formatTime(minute)}:{formatTime(seconds)}
-    </Text>
+    <View style={styles.counterContainer}>
+      <Text style={styles.text}>
+        {formatTime(minute)}:{formatTime(seconds)}
+      </Text>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  counterContainer: {
+    backgroundColor: colors.screen,
+    borderRadius: spacing.lg,
+    overflow: 'hidden',
+    width: 280,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.sm,
+  },
   text: {
     fontSize: fontSizes.xxxl,
     fontWeight: 'bold',
     color: colors.white,
-    padding: spacing.sm,
-    backgroundColor: 'rgba(94, 132, 226, 0.3)',
-    borderRadius: fontSizes.lg,
-    width: 280,
-    textAlign: 'center',
   },
 });

@@ -5,7 +5,6 @@ import {
   Platform,
   StatusBar,
   View,
-  Text,
 } from 'react-native';
 import { colors } from './src/utils/colors';
 import { Focus } from './src/features/Focus';
@@ -19,10 +18,10 @@ export default function App() {
   return (
     <SafeAreaView style={styles.container}>
       {!currentSubject ? (
-        <>
+        <View style={styles.main} >
           <Focus addSubject={setCurrentSubject} />
-          <FocusHistory history={history} />
-        </>
+          <FocusHistory history={history} setHistory={setHistory} />
+        </View>
       ) : (
         <Timer
           focusSubject={currentSubject}
@@ -40,4 +39,8 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     backgroundColor: colors.darkBlue,
   },
+  main: {
+    flex: 1,
+    justifyItems: 'center',
+  }
 });

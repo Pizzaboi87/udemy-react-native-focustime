@@ -27,7 +27,8 @@ export const Focus = ({ addSubject }) => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 0.25,
+    flex: 0.2,
+    paddingTop: spacing.xxl
   },
   inputContainer: {
     padding: spacing.lg,
